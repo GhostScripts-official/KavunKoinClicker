@@ -243,9 +243,4 @@
 
                 if (!snapshot.exists()) {
                     await set(playerRef, { password, score: 0, clickPower: 1, upgradeCost: 50 });
-                    alert("Регистрация успешна! Войдите в свой аккаунт.");
-                    hideModal();
-                } else {
-                    alert("Игрок с таким именем уже существует!");
-                }
-            }
+                    alert("Регистрация успеш
