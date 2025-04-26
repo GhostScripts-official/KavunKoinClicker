@@ -1,142 +1,116 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KavunKoin Clicker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        img {
-            width: 150px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-        img:hover {
-            transform: scale(1.2);
-        }
-        h1 {
-            color: #333;
-        }
-        #shop, #leaderboardSection {
-            margin-top: 30px;
-        }
-        button {
-            margin: 10px;
-            padding: 10px 20px;
-            background: linear-gradient(to right, #ff7f50, #ff4500);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        button:hover {
-            background-color: #ff6347;
-            transform: scale(1.1);
-        }
-        #leaderboardButton {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 10px 15px;
-        }
-        #leaderboardSection {
-            display: none;
-        }
-        table {
-            margin: auto;
-            border-collapse: collapse;
-        }
-        td, th {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        th {
-            background-color: #f4a460;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <h1>KavunKoin Clicker</h1>
-    <p>Очки: <span id="score">0</span></p>
-    <img id="clickImage" src="https://i.postimg.cc/DzY3YGQV/Picsart-25-04-25-16-31-46-960.png" alt="Кликни">
+<button id="leaderboardButton">Таблица лидеров</button>
 
-    <div id="shop">
-        <h2>Магазин</h2>
-        <p>Потрать очки на улучшения!</p>
-        <button id="upgrade">Улучшение (50 очков)</button>
-    </div>
+<div id="leaderboardSection">
+    <h2>Таблица лидеров</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Очки</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+    </table>
+</div>
 
-    <button id="leaderboardButton">Таблица лидеров</button>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-    <div id="leaderboardSection">
-        <h2>Таблица лидеров</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Имя</th>
-                    <th>Очки</th>
-                </tr>
-            </thead>
-            <tbody id="leaderboardBody"></tbody>
-        </table>
-    </div>
+    const firebaseConfig = {
+        apiKey: "AlzaSyCf_H8MkMhYJioAcTHac8bX8gC0MKand8",
+        authDomain: "kavunkoin.firebaseapp.com",
+        databaseURL: "https://kavunkoin-default-rtdb.firebaseio.com",
+        projectId: "kavunkoin",
+        storageBucket: "kavunkoin.appspot.com",
+        messagingSenderId: "825488580549",
+        appId: "1:825488580549:web:8ae4b6c4016de71b907d6a"
+    };
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
 
-        const firebaseConfig = {
-            apiKey: "AlzaSyCf_H8MkMhYJioAcTHac8bX8gC0MKand8",
-            authDomain: "kavunkoin.firebaseapp.com",
-            databaseURL: "https://kavunkoin-default-rtdb.firebaseio.com",
-            projectId: "kavunkoin",
-            storageBucket: "kavunkoin.appspot.com",
-            messagingSenderId: "825488580549",
-            appId: "1:825488580549:web:8ae4b6c4016de71b907d6a"
-        };
+    let score = 0;
+    let upgradeCost = 50;
+    let clickPower = 1;
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+    // Обработка кликов
+    document.getElementById('clickImage').addEventListener('click', () => {
+        score += clickPower;
+        document.getElementById('score').textContent = score;
+    });
 
-        let score = 0;
-        let upgradeCost = 50;
-        let clickPower = 1;
-
-        // Обработка кликов
-        document.getElementById('clickImage').addEventListener('click', () => {
-            score += clickPower;
+    // Обработка улучшений
+    document.getElementById('upgrade').addEventListener('click', () => {
+        if (score >= upgradeCost) {
+            score -= upgradeCost;
+            clickPower++;
+            upgradeCost += 20;
             document.getElementById('score').textContent = score;
-        });
+            document.getElementById('upgrade').textContent = `Улучшение (${upgradeCost} очков)`;
+        } else {
+            alert("Недостаточно очков!");
+        }
+    });
 
-        // Обработка улучшений
-        document.getElementById('upgrade').addEventListener('click', () => {
-            if (score >= upgradeCost) {
-                score -= upgradeCost;
-                clickPower++;
-                upgradeCost += 20;
-                document.getElementById('score').textContent = score;
-                document.getElementById('upgrade').textContent = `Улучшение (${upgradeCost} очков)`;
+    // Загрузка данных таблицы лидеров
+    const loadLeaderboard = async () => {
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        leaderboardBody.innerHTML = ""; // Очищаем таблицу перед загрузкой данных
+
+        const snapshot = await get(ref(database, 'players'));
+        if (snapshot.exists()) {
+            const players = snapshot.val();
+            const sortedPlayers = Object.entries(players).sort(([, a], [, b]) => b.score - a.score);
+
+            sortedPlayers.forEach(([name, data]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${name}</td><td>${data.score}</td>`;
+                leaderboardBody.appendChild(row);
+            });
+        } else {
+            leaderboardBody.innerHTML = "<tr><td colspan='2'>Нет данных</td></tr>";
+        }
+    };
+
+    // Обработка кнопки таблицы лидеров
+    document.getElementById('leaderboardButton').addEventListener('click', () => {
+        const leaderboardSection = document.getElementById('leaderboardSection');
+        leaderboardSection.style.display = 
+            leaderboardSection.style.display === 'none' ? 'block' : 'none';
+
+        if (leaderboardSection.style.display === 'block') {
+            loadLeaderboard();
+        }
+    });
+
+    // Авторизация игрока
+    document.getElementById('login').addEventListener('click', async () => {
+        playerName = document.getElementById('playerName').value;
+        password = document.getElementById('password').value;
+
+        if (playerName && password) {
+            const playerRef = ref(database, 'players/' + playerName);
+            const snapshot = await get(playerRef);
+
+            if (snapshot.exists()) {
+                const storedPassword = snapshot.val().password;
+                if (storedPassword === password) {
+                    score = snapshot.val().score || 0;
+                    clickPower = snapshot.val().clickPower || 1;
+                    upgradeCost = snapshot.val().upgradeCost || 50;
+                    document.getElementById('score').textContent = score;
+                    document.getElementById('upgrade').textContent = `Улучшение (${upgradeCost} очков)`;
+                    alert("Вход выполнен успешно!");
+                    hideModal();
+                } else {
+                    alert("Неверный пароль!");
+                }
             } else {
-                alert("Недостаточно очков!");
+                alert("Игрок с таким именем не найден!");
             }
-        });
-
-        // Обработка кнопки таблицы лидеров
-        document.getElementById('leaderboardButton').addEventListener('click', () => {
-            const leaderboardSection = document.getElementById('leaderboardSection');
-            leaderboardSection.style.display = 
-                leaderboardSection.style.display === 'none' ? 'block' : 'none';
-        });
-    </script>
-</body>
-</html>
+        } else {
+            alert("Введите ник и пароль!");
+        }
+    });
+</script>
