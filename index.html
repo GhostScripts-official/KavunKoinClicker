@@ -239,4 +239,8 @@
 
             if (playerName && password) {
                 const playerRef = ref(database, 'players/' + playerName);
-                const snapshot = await get
+                const snapshot = await get(playerRef);
+
+                if (!snapshot.exists()) {
+                    await set(playerRef, { password, score: 0, clickPower: 1, upgradeCost: 50 });
+                    alert("Регистрация успешна! Войд
